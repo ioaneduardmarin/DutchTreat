@@ -3,7 +3,7 @@
     "Favorite": "Blue"
   },
   "ConnectionStrings": {
-    "DutchConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=DutchTreatDb;Integrated Security=True;MultipleActiveResultSets=true;"
+    "DutchConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Database=DutchTreatDb;Integrated Security=True;MultipleActiveResultSets=true;"
   },
   "Logging": {
     "LogLevel": {
