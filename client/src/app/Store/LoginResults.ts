@@ -1,4 +1,9 @@
 ﻿export class LoginResults {
-  token: string;
-  expiration: Date;
+    token: string;
+    expiration: Date;
+}
+
+export class LoginRequest {
+    username: "";
+    password: "";
 }

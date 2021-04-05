@@ -2,74 +2,84 @@
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { LoginResults } from "./LoginResults";
+import { LoginResults, LoginRequest } from "./LoginResults";
 import { Order, OrderItem } from "./Order";
 import { Product } from "./Product";
 
 @Injectable()
 export default class Store {
 
-  order = new Order();
-  products: Observable<Product[]>;
-  token = "";
-  tokenExpiration = new Date();
-  errorMessage = "";
+    order = new Order();
+    products: Observable<Product[]>;
+    token = "";
+    tokenExpiration = new Date();
+    errorMessage = "";
 
-  constructor(private http: HttpClient) { }
-
-  loadProducts() {
-
-    // If we've loaded the products, just return
-    if (this.products) return new Observable();
-
-    // Otherwise load the products
-    return this.http.get<Observable<Product[]>>("/api/products")
-      .pipe(map(result => this.products = result));
-  }
-
-  addToOrder(product: Product) {
-    let item: OrderItem = this.order.items.find(item => item.productId === product.id);
-
-    if (item) {
-      item.quantity++;
-    } else {
-      item = new OrderItem();
-      item.productId = product.id;
-      item.productArtId = product.artId;
-      item.productArtist = product.artist;
-      item.productCategory = product.category;
-      item.productTitle = product.title;
-      item.productSize = product.size;
-      item.quantity = 1;
-      item.unitPrice = product.price;
-      this.order.items.push(item);
+    constructor(private http: HttpClient) {
+        console.log(localStorage.getItem("accessToken"));
+        console.log(localStorage.getItem("accessTokenExpiration"));
+        this.token = localStorage.getItem("accessToken") || "";
+        this.tokenExpiration = Date.parse(localStorage.getItem("accessTokenExpiration")) < Date.now() ? new Date(localStorage.getItem("accessTokenExpiration")) : new Date();
     }
 
-  }
+    loadProducts() {
 
-  get loginRequired(): boolean {
-    return this.token.length === 0 || this.tokenExpiration > new Date();
-  }
+        // If we've loaded the products, just return
+        if (this.products) return new Observable();
 
-  login(creds) {
-    return this.http.post<LoginResults>("/account/createtoken", creds)
-      .pipe(map(result => {
-        this.token = result.token;
-        this.tokenExpiration = result.expiration;
-      })); 
-  }
+        // Otherwise load the products
+        return this.http.get<Observable<Product[]>>("/api/products")
+            .pipe(map(result => this.products = result));
+    }
 
-  clearOrder() {
-    this.order = new Order();
-  }
+    addToOrder(product: Product) {
+        let item: OrderItem = this.order.items.find(item => item.productId === product.id);
 
-  checkout() {
+        if (item) {
+            item.quantity++;
+        } else {
+            item = new OrderItem();
+            item.productId = product.id;
+            item.productArtId = product.artId;
+            item.productArtist = product.artist;
+            item.productCategory = product.category;
+            item.productTitle = product.title;
+            item.productSize = product.size;
+            item.quantity = 1;
+            item.unitPrice = product.price;
+            this.order.items.push(item);
+        }
 
-    const headers = new HttpHeaders().set("Authorization", "Bearer " + this.token);
+    }
 
-    return this.http.post("/api/orders", this.order, {
-      headers: headers
-    });
+    get loginRequired(): boolean {
+        return this.token.length === 0 || this.tokenExpiration > new Date();
+    }
 
-  }
+    login(creds: LoginRequest) {
+        alert("login index.ts Accesat!");
+        return this.http.post<LoginResults>("/account/createtoken", creds)
+            .pipe(map(result => {
+                alert("login mapping accesat!");
+                console.log(result);
+                this.token = result.token;
+                this.tokenExpiration = result.expiration;
+                localStorage.setItem("accessToken", result.token);
+                localStorage.setItem("accessTokenExpiration", result.expiration.toString());
+            }));
+    }
+
+    clearOrder() {
+        this.order = new Order();
+    }
+
+    checkout() {
+
+        const headers = new HttpHeaders().set("Authorization", "Bearer " + this.token);
+
+        return this.http.post("/api/orders", this.order, {
+            headers: headers
+        });
+
+    }
 }
